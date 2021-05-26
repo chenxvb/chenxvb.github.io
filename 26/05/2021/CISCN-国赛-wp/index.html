@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"chenxvb.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Tiny trafficwireshare 分析流量 http传输的 flag_warpper比较显眼 解密得flag_warpper 是flag格式 看相邻的流量，flag大概和 test，和secret 有关 test好像是一个代码文件 secret乱码（应该要用test解码">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CISCN 国赛 wp">
+<meta property="og:url" content="https://chenxvb.github.io/26/05/2021/CISCN-%E5%9B%BD%E8%B5%9B-wp/index.html">
+<meta property="og:site_name" content="Vior">
+<meta property="og:description" content="Tiny trafficwireshare 分析流量 http传输的 flag_warpper比较显眼 解密得flag_warpper 是flag格式 看相邻的流量，flag大概和 test，和secret 有关 test好像是一个代码文件 secret乱码（应该要用test解码">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-05-26T14:54:00.000Z">
+<meta property="article:modified_time" content="2021-05-26T15:06:27.915Z">
+<meta property="article:author" content="Vior">
+<meta property="article:tag" content="reverse">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://chenxvb.github.io/26/05/2021/CISCN-%E5%9B%BD%E8%B5%9B-wp/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>CISCN 国赛 wp | Vior</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Vior</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Vior's home</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://chenxvb.github.io/26/05/2021/CISCN-%E5%9B%BD%E8%B5%9B-wp/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Vior">
+      <meta itemprop="description" content="qvq">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Vior">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          CISCN 国赛 wp
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-05-26 22:54:00 / 修改时间：23:06:27" itemprop="dateCreated datePublished" datetime="2021-05-26T22:54:00+08:00">2021-05-26</time>
+            </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/write-up/" itemprop="url" rel="index"><span itemprop="name">write up</span></a>
+                </span>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Tiny-traffic"><a href="#Tiny-traffic" class="headerlink" title="Tiny traffic"></a>Tiny traffic</h2><p>wireshare 分析流量</p>
+<p>http传输的 flag_warpper比较显眼</p>
+<p>解密得flag_warpper 是flag格式</p>
+<p>看相邻的流量，flag大概和 test，和secret 有关</p>
+<p>test好像是一个代码文件</p>
+<p>secret乱码（应该要用test解码</p>
+<span id="more"></span>
+
+<p>test:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">syntax = <span class="string">&quot;proto3&quot;</span>;</span><br><span class="line"></span><br><span class="line">message PBResponse &#123;</span><br><span class="line">  int32 code = <span class="number">1</span>;</span><br><span class="line">  int64 flag_part_convert_to_hex_plz = <span class="number">2</span>;</span><br><span class="line">  message data &#123;</span><br><span class="line">    string junk_data = <span class="number">2</span>;</span><br><span class="line">    string flag_part = <span class="number">1</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  repeated data dataList = <span class="number">3</span>;</span><br><span class="line">  int32 flag_part_plz_convert_to_hex = <span class="number">4</span>;</span><br><span class="line">  string flag_last_part = <span class="number">5</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">message PBRequest &#123;</span><br><span class="line">  string cate_id = <span class="number">1</span>;</span><br><span class="line">  int32 page = <span class="number">2</span>;</span><br><span class="line">  int32 pageSize = <span class="number">3</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>google 查proto3 可以查到官方文档</p>
+<p><a target="_blank" rel="noopener" href="https://developers.google.com/protocol-buffers/docs/cpptutorial">https://developers.google.com/protocol-buffers/docs/cpptutorial</a></p>
+<p>可以发现，可以导出为其他语言使用</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">解析和序列化</span><br><span class="line">最后，每个协议缓冲区类都有使用协议缓冲区二进制格式写入和读取所选类型的消息的方法。这些包括：</span><br><span class="line"></span><br><span class="line">SerializeToString()：序列化消息并以字符串形式返回。请注意，字节是二进制的，而不是文本。我们仅将<span class="built_in">str</span>类型用作方便的容器。</span><br><span class="line">ParseFromString(data)：解析给定字符串中的消息。</span><br></pre></td></tr></table></figure>
+
+<p>安装配置好后，我导出为python文件，写利用脚本如下</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> qwq_pb2</span><br><span class="line">f = <span class="built_in">open</span>(<span class="string">&quot;secret&quot;</span>, <span class="string">&quot;rb&quot;</span>)</span><br><span class="line">a = qwq_pb2.PBResponse()</span><br><span class="line">a.SerializeToString()</span><br><span class="line">a.ParseFromString(f.read())</span><br><span class="line"><span class="built_in">print</span> (a)</span><br><span class="line"><span class="built_in">print</span> (<span class="built_in">hex</span>(<span class="number">15100450</span>))</span><br><span class="line"><span class="built_in">print</span> (<span class="built_in">hex</span>(<span class="number">16453958</span>))</span><br></pre></td></tr></table></figure>
+
+<p>输出</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">code: 200</span><br><span class="line">flag_part_convert_to_hex_plz: 15100450</span><br><span class="line">dataList &#123;</span><br><span class="line">  flag_part: &quot;e2345&quot;</span><br><span class="line">  junk_data: &quot;7af2c&quot;</span><br><span class="line">&#125;</span><br><span class="line">dataList &#123;</span><br><span class="line">  flag_part: &quot;7889b0&quot;</span><br><span class="line">  junk_data: &quot;82bc0&quot;</span><br><span class="line">&#125;</span><br><span class="line">flag_part_plz_convert_to_hex: 16453958</span><br><span class="line">flag_last_part: &quot;d172a38dc&quot;</span><br><span class="line"></span><br><span class="line">0xe66a22</span><br><span class="line">0xfb1146</span><br></pre></td></tr></table></figure>
+
+<p>flag: CISCN{e66a22e23457889b0fb1146fb1146}</p>
+<h2 id="baby-bc"><a href="#baby-bc" class="headerlink" title="baby.bc"></a>baby.bc</h2><p>题目原件给了bc文件，file一下发现是livm的东西，下载clang编译为可执行文件逆向</p>
+<p>硬逆解，文件大意是要求输入长为25，且每个数不大于5</p>
+<p>docheak中可发现逻辑，分为行列的重复检测和行列的特殊（大小）检测</p>
+<p>规则挺像数独的，但我没想那么多，就暴搜答案</p>
+<p>写脚本暴力搜索如下</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="keyword">int</span> <span class="built_in">map</span>[<span class="number">5</span>][<span class="number">5</span>];</span><br><span class="line"><span class="keyword">int</span> row[<span class="number">5</span>][<span class="number">5</span>]=</span><br><span class="line">&#123;</span><br><span class="line">    <span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,</span><br><span class="line">    <span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,</span><br><span class="line">    <span class="number">2</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,</span><br><span class="line">    <span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,</span><br><span class="line">    <span class="number">1</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="keyword">int</span> col[<span class="number">5</span>][<span class="number">5</span>]=</span><br><span class="line">&#123;</span><br><span class="line">    <span class="number">0</span>,<span class="number">0</span>,<span class="number">2</span>,<span class="number">0</span>,<span class="number">2</span>,</span><br><span class="line">    <span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,</span><br><span class="line">    <span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,</span><br><span class="line">    <span class="number">0</span>,<span class="number">1</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">1</span>,</span><br><span class="line">    <span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span>,<span class="number">0</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">dfs</span><span class="params">(<span class="keyword">int</span> i,<span class="keyword">int</span> j)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(i == <span class="number">5</span>)&#123;</span><br><span class="line">		<span class="keyword">if</span>(<span class="built_in">map</span>[<span class="number">2</span>][<span class="number">2</span>] == <span class="number">4</span>) <span class="keyword">if</span> (<span class="built_in">map</span>[<span class="number">3</span>][<span class="number">3</span>] == <span class="number">3</span>) </span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> r1=<span class="number">0</span>;r1&lt;<span class="number">5</span>;r1++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">int</span> r2=<span class="number">0</span>;r2&lt;<span class="number">5</span>;r2++)&#123;</span><br><span class="line">            	<span class="keyword">if</span>(r1 == <span class="number">2</span> &amp;&amp; r2 == <span class="number">2</span>) <span class="built_in">printf</span>(<span class="string">&quot;0&quot;</span>);</span><br><span class="line">            	<span class="keyword">else</span> <span class="keyword">if</span> (r1 == <span class="number">3</span> &amp;&amp; r2 == <span class="number">3</span>) <span class="built_in">printf</span>(<span class="string">&quot;0&quot;</span>);</span><br><span class="line">                <span class="keyword">else</span> <span class="built_in">printf</span>(<span class="string">&quot;%d&quot;</span>,<span class="built_in">map</span>[r1][r2]);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;\\n&quot;</span>);</span><br><span class="line">        <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">bool</span> o;</span><br><span class="line">    <span class="keyword">for</span> (<span class="keyword">int</span> r=<span class="number">1</span>;r &lt;= <span class="number">5</span>;r++)</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">if</span>(j != <span class="number">0</span>) <span class="comment">//row</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(row[i][j<span class="number">-1</span>] == <span class="number">1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span>(r &gt; <span class="built_in">map</span>[i][j<span class="number">-1</span>]) <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(row[i][j<span class="number">-1</span>] == <span class="number">2</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span>(r &lt; <span class="built_in">map</span>[i][j<span class="number">-1</span>]) <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(i != <span class="number">0</span>) <span class="comment">//col</span></span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span>(col[i<span class="number">-1</span>][j] == <span class="number">1</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span>(r &lt; <span class="built_in">map</span>[i<span class="number">-1</span>][j]) <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="keyword">if</span>(col[i<span class="number">-1</span>][j] == <span class="number">2</span>)</span><br><span class="line">            &#123;</span><br><span class="line">                <span class="keyword">if</span>(r &gt; <span class="built_in">map</span>[i<span class="number">-1</span>][j]) <span class="keyword">continue</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        o=<span class="number">1</span>;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> r1=<span class="number">0</span>;r1&lt;j;r1++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (r == <span class="built_in">map</span>[i][r1])&#123;</span><br><span class="line">                o=<span class="number">0</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">for</span>(<span class="keyword">int</span> r1=<span class="number">0</span>;r1&lt;i;r1++)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="keyword">if</span> (r == <span class="built_in">map</span>[r1][j])&#123;</span><br><span class="line">                o=<span class="number">0</span>;</span><br><span class="line">                <span class="keyword">break</span>;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span>(o)</span><br><span class="line">        &#123;</span><br><span class="line">            <span class="built_in">map</span>[i][j] = r;</span><br><span class="line">            <span class="keyword">if</span>(j == <span class="number">4</span>) dfs(i+<span class="number">1</span>,<span class="number">0</span>);</span><br><span class="line">            <span class="keyword">else</span> dfs(i,j+<span class="number">1</span>);</span><br><span class="line">            <span class="built_in">map</span>[i][j] = <span class="number">0</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    dfs(<span class="number">0</span>,<span class="number">0</span>);</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;ok\n&quot;</span>);</span><br><span class="line">    getchar();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>输出为 1425353142350212150442315</p>
+<p>本来的脚本是不考虑map有数的，结果被卡了</p>
+<p>中间被卡了半个多小时,被map不全为0卡了</p>
+<p>md5(1425353142350212150442315)即可得flag</p>
+<p>CISCN{md5(1425353142350212150442315)}</p>
+<h2 id="glass"><a href="#glass" class="headerlink" title="glass"></a>glass</h2><p>（复现）</p>
+<p>一开始以为为安卓逆向，就放了。后听说是 RE 签到题就回来看。</p>
+<p>文件主题在 native 的 check flag 中， ida 直接 arm 反汇编得：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> __fastcall <span class="title">Java_com_ciscn_glass_MainActivity_checkFlag</span><span class="params">(<span class="keyword">int</span> a1, <span class="keyword">int</span> a2, <span class="keyword">int</span> a3)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">char</span> *input; <span class="comment">// r4</span></span><br><span class="line">  <span class="keyword">int</span> v4; <span class="comment">// r5</span></span><br><span class="line">  <span class="keyword">char</span> know[<span class="number">256</span>]; <span class="comment">// [sp+0h] [bp-220h] BYREF</span></span><br><span class="line">  <span class="keyword">char</span> empty[<span class="number">260</span>]; <span class="comment">// [sp+100h] [bp-120h] BYREF</span></span><br><span class="line"></span><br><span class="line">  input = sub_F0C(a1, a3);</span><br><span class="line">  <span class="keyword">if</span> ( <span class="built_in">strlen</span>(input) != <span class="number">39</span> )</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">memset</span>(empty, <span class="number">0</span>, <span class="number">0x100</span>u);</span><br><span class="line">  qmemcpy(know, <span class="string">&quot;12345678&quot;</span>, <span class="keyword">sizeof</span>(know));</span><br><span class="line">  v4 = <span class="built_in">strlen</span>(know);</span><br><span class="line">  sub_FFC(empty, know, v4);<span class="comment">//打表</span></span><br><span class="line">  sub_1088(empty, input, <span class="number">39</span>);<span class="comment">//对表异或</span></span><br><span class="line">  sub_10D4(input, <span class="number">39</span>, know, v4);<span class="comment">//分组和对表异或</span></span><br><span class="line">  <span class="keyword">return</span> <span class="built_in">memcmp</span>(input, &amp;unk_497C, <span class="number">047u</span>) == <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>不难写脚本，只要将 sub_10D4 中异或改写一下就可得 flag，其中需要一些基础的异或知识，在三组异或时列三个等式可推出原值</p>
+<p>脚本如下：</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;cstdio&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;string.h&gt;</span></span></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sub_10D4</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> *result1,<span class="keyword">unsigned</span> <span class="keyword">int</span> n_39, <span class="keyword">unsigned</span> <span class="keyword">char</span> *know, <span class="keyword">int</span> n_8)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i; <span class="comment">// r4</span></span><br><span class="line">    <span class="keyword">char</span> *v5; <span class="comment">// r6</span></span><br><span class="line">    <span class="keyword">char</span> v6; <span class="comment">// r5</span></span><br><span class="line">    <span class="keyword">char</span> v7; <span class="comment">// lr</span></span><br><span class="line">    <span class="keyword">char</span> v8; <span class="comment">// r12</span></span><br><span class="line">    <span class="keyword">int</span> j; <span class="comment">// lr</span></span><br><span class="line">    <span class="keyword">int</span> k; <span class="comment">// r6</span></span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> *result = result1;</span><br><span class="line">    <span class="keyword">for</span> ( j = <span class="number">0</span>; j &lt; n_39; j += <span class="number">8</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="keyword">for</span> ( k = <span class="number">0</span>; k != <span class="number">8</span> &amp;&amp; j + k &lt; n_39; ++k )</span><br><span class="line">            result[k] ^= know[k];  </span><br><span class="line">        result += <span class="number">8</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> i0,i1,i2; </span><br><span class="line">    <span class="keyword">for</span> ( i = <span class="number">0</span>; i &lt; n_39; i += <span class="number">3</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        i0 = result1[i];</span><br><span class="line">        i1 = result1[i+<span class="number">1</span>];</span><br><span class="line">        i2 = result1[i+<span class="number">2</span>];</span><br><span class="line">        result1[i] = i1 ^ i2;</span><br><span class="line">        result1[i+<span class="number">1</span>] = i0 ^ i1;</span><br><span class="line">        result1[i+<span class="number">2</span>] = i0 ^ i1 ^ i2;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sub_1088</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> *empty,<span class="keyword">unsigned</span> <span class="keyword">char</span> *input, <span class="keyword">int</span> n_39)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="keyword">int</span> v3; <span class="comment">// r3</span></span><br><span class="line">  <span class="keyword">int</span> v4; <span class="comment">// r4</span></span><br><span class="line">  <span class="keyword">int</span> v5; <span class="comment">// r5</span></span><br><span class="line"></span><br><span class="line">  v3 = <span class="number">0</span>;</span><br><span class="line">  v4 = <span class="number">0</span>;</span><br><span class="line">  <span class="keyword">while</span> ( n_39 )</span><br><span class="line">  &#123;</span><br><span class="line">    --n_39;</span><br><span class="line">    v4 = (v4 + <span class="number">1</span>) % <span class="number">256</span>;</span><br><span class="line">    v5 = empty[v4];</span><br><span class="line">    v3 = (v3 + v5) % <span class="number">256</span>;</span><br><span class="line">    empty[v4] = empty[v3];</span><br><span class="line">    empty[v3] = v5;</span><br><span class="line">    *input++ ^= empty[(<span class="keyword">unsigned</span> <span class="keyword">char</span>)(v5 + empty[v4])];</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">sub_FFC</span><span class="params">(<span class="keyword">unsigned</span> <span class="keyword">char</span> *empty, <span class="keyword">unsigned</span> <span class="keyword">char</span> *Kown1_6, <span class="keyword">int</span> n_8)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> i; <span class="comment">// r6</span></span><br><span class="line">    <span class="keyword">int</span> v7; <span class="comment">// r1</span></span><br><span class="line">    <span class="keyword">int</span> v8; <span class="comment">// r0</span></span><br><span class="line">    <span class="keyword">int</span> v9; <span class="comment">// r1</span></span><br><span class="line">    <span class="keyword">int</span> v10; <span class="comment">// r3</span></span><br><span class="line">    <span class="keyword">char</span> v12[<span class="number">260</span>]; <span class="comment">// [sp+0h] [bp-120h] BYREF</span></span><br><span class="line"></span><br><span class="line">    <span class="built_in">memset</span>(v12, <span class="number">0</span>, <span class="number">0x100</span>u);</span><br><span class="line">    <span class="keyword">for</span> ( i = <span class="number">0</span>; i != <span class="number">256</span>; ++i )</span><br><span class="line">    &#123;</span><br><span class="line">        empty[i] = i;</span><br><span class="line">        v7 = i % <span class="number">8</span>;</span><br><span class="line">        v12[i] = Kown1_6[v7];</span><br><span class="line">    &#125;</span><br><span class="line">    v8 = <span class="number">0</span>;</span><br><span class="line">    v9 = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">while</span> ( v8 != <span class="number">256</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        v10 = empty[v8];</span><br><span class="line">        <span class="comment">// printf(&quot;%d\n&quot;,v10);</span></span><br><span class="line">        v9 = (v9 + v10 + v12[v8]) % <span class="number">256</span>;</span><br><span class="line">        empty[v8++] = empty[v9];</span><br><span class="line">        empty[v9] = v10;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> empty[<span class="number">260</span>];</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> result[<span class="number">0x100</span>]=&#123;</span><br><span class="line">    <span class="number">0xA3</span>, <span class="number">0x1A</span>, <span class="number">0xE3</span>, <span class="number">0x69</span>, <span class="number">0x2F</span>, <span class="number">0xBB</span>, <span class="number">0x1A</span>, <span class="number">0x84</span>, <span class="number">0x65</span>,</span><br><span class="line">    <span class="number">0xC2</span>, <span class="number">0xAD</span>, <span class="number">0xAD</span>, <span class="number">0x9E</span>, <span class="number">0x96</span>, <span class="number">5</span>, <span class="number">2</span>, <span class="number">0x1F</span>, <span class="number">0x8E</span>, <span class="number">0x36</span>,</span><br><span class="line">    <span class="number">0x4F</span>, <span class="number">0xE1</span>, <span class="number">0xEB</span>, <span class="number">0xAF</span>, <span class="number">0xF0</span>, <span class="number">0xEA</span>, <span class="number">0xC4</span>, <span class="number">0xA8</span>, <span class="number">0x2D</span>,</span><br><span class="line">    <span class="number">0x42</span>, <span class="number">0xC7</span>, <span class="number">0x6E</span>, <span class="number">0x3F</span>, <span class="number">0xB0</span>, <span class="number">0xD3</span>, <span class="number">0xCC</span>, <span class="number">0x78</span>, <span class="number">0xF9</span>,</span><br><span class="line">    <span class="number">0x98</span>, <span class="number">0x3F</span>, <span class="number">0</span>&#125;;</span><br><span class="line">    <span class="keyword">unsigned</span> <span class="keyword">char</span> know[<span class="number">9</span>]=<span class="string">&quot;12345678&quot;</span>;</span><br><span class="line">    <span class="built_in">memset</span>(empty, <span class="number">0</span>, <span class="number">0x100</span>u);</span><br><span class="line">    <span class="keyword">int</span> n_39 = <span class="number">39</span>;</span><br><span class="line">    sub_FFC(empty,know, <span class="number">8</span>);</span><br><span class="line">    sub_10D4(result,<span class="number">39</span>,know,<span class="number">8</span>);</span><br><span class="line">    sub_1088(empty, result, <span class="number">39</span>);</span><br><span class="line">    <span class="keyword">for</span> ( <span class="keyword">int</span> j = <span class="number">0</span>; j &lt; n_39; j += <span class="number">1</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%c&quot;</span>,result[j]);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/reverse/" rel="tag"># reverse</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/08/04/2021/19-%E7%BA%A2%E5%B8%BD%E6%9D%AF-Re-calc-Do-you-love-c-vking/" rel="prev" title="19 红帽杯 Re calc/Do you love c++(viking))">
+      <i class="fa fa-chevron-left"></i> 19 红帽杯 Re calc/Do you love c++(viking))
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Tiny-traffic"><span class="nav-number">1.</span> <span class="nav-text">Tiny traffic</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#baby-bc"><span class="nav-number">2.</span> <span class="nav-text">baby.bc</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#glass"><span class="nav-number">3.</span> <span class="nav-text">glass</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Vior</p>
+  <div class="site-description" itemprop="description">qvq</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">8</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Vior</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
