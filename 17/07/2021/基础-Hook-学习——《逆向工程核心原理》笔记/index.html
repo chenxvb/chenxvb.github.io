@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"chenxvb.github.io","root":"/","scheme":"Mist","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="Dll 注入​    Dll 注入是指向运行中的其他进程强制插入特定的 Dll 文件。实际上，Dll 注入是命令其他进程自行调用 LoadLibrary() Api，进而加载上用户指定的 Dll 文件。其方式主要分为一下三种：  1. 创建远程线程(CreateRemoteThread() Api)  2. 使用注册表(AppInit_Dlls 值)  3. 消息勾取(SetWindowHookE">
+<meta property="og:type" content="article">
+<meta property="og:title" content="基础 Hook 学习——《逆向工程核心原理》笔记">
+<meta property="og:url" content="https://chenxvb.github.io/17/07/2021/%E5%9F%BA%E7%A1%80-Hook-%E5%AD%A6%E4%B9%A0%E2%80%94%E2%80%94%E3%80%8A%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E3%80%8B%E7%AC%94%E8%AE%B0/index.html">
+<meta property="og:site_name" content="Vior">
+<meta property="og:description" content="Dll 注入​    Dll 注入是指向运行中的其他进程强制插入特定的 Dll 文件。实际上，Dll 注入是命令其他进程自行调用 LoadLibrary() Api，进而加载上用户指定的 Dll 文件。其方式主要分为一下三种：  1. 创建远程线程(CreateRemoteThread() Api)  2. 使用注册表(AppInit_Dlls 值)  3. 消息勾取(SetWindowHookE">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://chenxvb.github.io/images/pasted-24.png">
+<meta property="article:published_time" content="2021-07-17T10:34:00.000Z">
+<meta property="article:modified_time" content="2021-07-17T10:38:51.911Z">
+<meta property="article:author" content="Vior">
+<meta property="article:tag" content="reverse">
+<meta property="article:tag" content="Hook">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://chenxvb.github.io/images/pasted-24.png">
+
+<link rel="canonical" href="https://chenxvb.github.io/17/07/2021/%E5%9F%BA%E7%A1%80-Hook-%E5%AD%A6%E4%B9%A0%E2%80%94%E2%80%94%E3%80%8A%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E3%80%8B%E7%AC%94%E8%AE%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>基础 Hook 学习——《逆向工程核心原理》笔记 | Vior</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Vior</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">Vior's home</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://chenxvb.github.io/17/07/2021/%E5%9F%BA%E7%A1%80-Hook-%E5%AD%A6%E4%B9%A0%E2%80%94%E2%80%94%E3%80%8A%E9%80%86%E5%90%91%E5%B7%A5%E7%A8%8B%E6%A0%B8%E5%BF%83%E5%8E%9F%E7%90%86%E3%80%8B%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Vior">
+      <meta itemprop="description" content="qvq">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Vior">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          基础 Hook 学习——《逆向工程核心原理》笔记
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2021-07-17 18:34:00 / 修改时间：18:38:51" itemprop="dateCreated datePublished" datetime="2021-07-17T18:34:00+08:00">2021-07-17</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h4 id="Dll-注入"><a href="#Dll-注入" class="headerlink" title="Dll 注入"></a>Dll 注入</h4><p>​    Dll 注入是指向运行中的其他进程强制插入特定的 Dll 文件。实际上，Dll 注入是命令其他进程自行调用 LoadLibrary() Api，进而加载上用户指定的 Dll 文件。其方式主要分为一下三种：</p>
+<pre><code> 1. 创建远程线程(CreateRemoteThread() Api)
+ 2. 使用注册表(AppInit_Dlls 值)
+ 3. 消息勾取(SetWindowHookEx() Api)
+</code></pre>
+<p>​    其中 windows 自带消息勾取 Api。 使用 SetWindowsHookEx() 可轻松实现消息勾取功能。</p>
+<h5 id="消息勾取-Hook-书本复现"><a href="#消息勾取-Hook-书本复现" class="headerlink" title="消息勾取 Hook (书本复现)"></a>消息勾取 Hook (书本复现)</h5><p>​    实现书本上的消息 hook，我们需要提前准备两个文件，Hookmain.exe 和 keyhook.dll。</p>
+<span id="more"></span>
+
+<p>​    注: 由于时间原因，书本官方所提供的程序和文件大部分已经处于不可用的状况下，建议用代码重新编译生成。</p>
+<p>​    Hookmain.exe</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;windows.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>	DEF_DLL_NAME		<span class="meta-string">&quot;keyhook.dll&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>	DEF_HOOKSTART		<span class="meta-string">&quot;HookStart&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span>	DEF_HOOKSTOP		<span class="meta-string">&quot;HookStop&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*PFN_HOOKSTART)</span><span class="params">()</span></span>;</span><br><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">void</span> <span class="params">(*PFN_HOOKSTOP)</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	HMODULE			hDll = <span class="literal">NULL</span>;</span><br><span class="line">	PFN_HOOKSTART	HookStart = <span class="literal">NULL</span>;</span><br><span class="line">	PFN_HOOKSTOP	HookStop = <span class="literal">NULL</span>;</span><br><span class="line">	<span class="keyword">char</span>			ch = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	hDll = LoadLibraryA(DEF_DLL_NAME);</span><br><span class="line">    <span class="keyword">if</span>( hDll == <span class="literal">NULL</span> )</span><br><span class="line">    &#123;</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;LoadLibrary(%s) failed!!! [%d]&quot;</span>, DEF_DLL_NAME, GetLastError());</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">	HookStart = (PFN_HOOKSTART)GetProcAddress(hDll, DEF_HOOKSTART);</span><br><span class="line">	HookStop = (PFN_HOOKSTOP)GetProcAddress(hDll, DEF_HOOKSTOP);</span><br><span class="line"></span><br><span class="line">	HookStart();</span><br><span class="line"></span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;press &#x27;q&#x27; to quit!\n&quot;</span>);</span><br><span class="line">	<span class="keyword">while</span>( getchar() != <span class="string">&#x27;q&#x27;</span> )	;</span><br><span class="line"></span><br><span class="line">	HookStop();</span><br><span class="line">	</span><br><span class="line">	FreeLibrary(hDll);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>​    可见这个代码非常的简单，主要是加载了 keyhook.dll，其他的就只是调用控制而已。</p>
+<p>​    keyhook.cpp</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;stdio.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">include</span> <span class="meta-string">&quot;windows.h&quot;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> DEF_PROCESS_NAME		<span class="meta-string">&quot;notepad.exe&quot;</span></span></span><br><span class="line"></span><br><span class="line">HINSTANCE g_hInstance = <span class="literal">NULL</span>;</span><br><span class="line">HHOOK g_hHook = <span class="literal">NULL</span>;</span><br><span class="line">HWND g_hWnd = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line"><span class="function">BOOL WINAPI <span class="title">DllMain</span><span class="params">(HINSTANCE hinstDLL, DWORD dwReason, LPVOID lpvReserved)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">switch</span>( dwReason )</span><br><span class="line">	&#123;</span><br><span class="line">        <span class="keyword">case</span> DLL_PROCESS_ATTACH:</span><br><span class="line">			g_hInstance = hinstDLL;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> DLL_PROCESS_DETACH:</span><br><span class="line">			<span class="keyword">break</span>;	</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> TRUE;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">LRESULT CALLBACK <span class="title">KeyboardProc</span><span class="params">(<span class="keyword">int</span> nCode, WPARAM wParam, LPARAM lParam)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="keyword">char</span> szPath[MAX_PATH] = &#123;<span class="number">0</span>,&#125;;</span><br><span class="line">	<span class="keyword">char</span> *p = <span class="literal">NULL</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span>( nCode &gt;= <span class="number">0</span> )</span><br><span class="line">	&#123;</span><br><span class="line">		<span class="keyword">if</span>( !(lParam &amp; <span class="number">0x80000000</span>) )</span><br><span class="line">		&#123;</span><br><span class="line">			GetModuleFileNameA(<span class="literal">NULL</span>, szPath, MAX_PATH);</span><br><span class="line">			p = <span class="built_in">strrchr</span>(szPath, <span class="string">&#x27;\\&#x27;</span>);</span><br><span class="line">            </span><br><span class="line">			<span class="keyword">if</span>( !_stricmp(p + <span class="number">1</span>, DEF_PROCESS_NAME) )</span><br><span class="line">			&#123;</span><br><span class="line">				MessageBox(<span class="literal">NULL</span>,<span class="string">&quot;Hook&quot;</span>,<span class="string">&quot;qwq&quot;</span>,MB_OK);</span><br><span class="line">				<span class="keyword">return</span> CallNextHookEx(g_hHook, nCode, wParam, lParam);</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> CallNextHookEx(g_hHook, nCode, wParam, lParam);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span> &#123;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br><span class="line">	__declspec(dllexport) <span class="function"><span class="keyword">void</span> <span class="title">HookStart</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		g_hHook = SetWindowsHookEx(WH_KEYBOARD, KeyboardProc, g_hInstance, <span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	__declspec(dllexport) <span class="function"><span class="keyword">void</span> <span class="title">HookStop</span><span class="params">()</span></span></span><br><span class="line"><span class="function">	</span>&#123;</span><br><span class="line">		<span class="keyword">if</span>( g_hHook )</span><br><span class="line">		&#123;</span><br><span class="line">			UnhookWindowsHookEx(g_hHook);</span><br><span class="line">			g_hHook = <span class="literal">NULL</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>​    keyhook.dll 代码很简单，主要是调用了 SetWindowsHookEx Api。</p>
+<p>​    注: 生成 dll 可用 g++ -shared -o dllname.dll dllname.cpp</p>
+<h5 id="效果展示"><a href="#效果展示" class="headerlink" title="效果展示"></a>效果展示</h5><p><img src="/images/pasted-24.png" alt="Hook"></p>
+<h5 id="消息勾取-Hook-pyhook-复现"><a href="#消息勾取-Hook-pyhook-复现" class="headerlink" title="消息勾取 Hook (pyhook 复现)"></a>消息勾取 Hook (pyhook 复现)</h5><p>​    虽然学习逆向和调试中，使用 c 语言更好，但如果你想试着编写一个 windows 消息钩子，用别人已经实现的 py 库更为轻松一些。</p>
+<p>​    pyhook 的安装需要 swig 和 VisualC++ 工具集， <a target="_blank" rel="noopener" href="https://www.zhihu.com/question/301401791/answer/525833748">简单安装教程</a>。</p>
+<p>​    代码示例：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="string">Created on Wed Dec 25 11:33:41 2019</span></span><br><span class="line"><span class="string">@author: erio</span></span><br><span class="line"><span class="string">&quot;&quot;&quot;</span></span><br><span class="line"><span class="comment">#USB 接口的键盘鼠标</span></span><br><span class="line"><span class="keyword">import</span> pythoncom</span><br><span class="line"><span class="keyword">import</span> PyHook3 <span class="keyword">as</span> pyHook</span><br><span class="line"><span class="keyword">import</span> win32api</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"></span><br><span class="line">path = <span class="string">&#x27;F://records.txt&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">onMouseEvent</span>(<span class="params">event</span>):</span></span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(path, <span class="string">&#x27;a+&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        f.write(<span class="string">&quot;-----Mouse Event Start-----\n&quot;</span>)</span><br><span class="line">        <span class="comment"># 监听鼠标事件</span></span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;MessageName:&quot;</span>, event.MessageName)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;WindowName:&quot;</span>, event.WindowName)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;Position:&quot;</span>, event.Position)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;Wheel:&quot;</span>, event.Wheel)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;---&quot;</span>)</span><br><span class="line">        <span class="comment"># 返回 True 以便将事件传给其它处理程序</span></span><br><span class="line">        <span class="comment"># 注意，这儿如果返回 False ，则鼠标事件将被全部拦截</span></span><br><span class="line">        t = time.localtime()</span><br><span class="line">        t = time.asctime(t)</span><br><span class="line">        result = <span class="string">&quot;Time : &quot;</span> + t + <span class="string">&quot;\n&quot;</span> + <span class="string">&quot;MessageName: &quot;</span>+ <span class="built_in">str</span>(event.MessageName)+<span class="string">&#x27;\n&#x27;</span>+<span class="string">&quot;WindowName: &quot;</span> + <span class="built_in">str</span>(event.WindowName) + \</span><br><span class="line">                <span class="string">&quot;\n&quot;</span> +<span class="string">&quot;Position: &quot;</span>+<span class="built_in">str</span>(event.Position)+<span class="string">&#x27;\n&#x27;</span>+<span class="string">&quot;Wheel: &quot;</span> +<span class="built_in">str</span>(event.Wheel)+<span class="string">&#x27;\n&#x27;</span></span><br><span class="line">        f.write(result)</span><br><span class="line">        f.write(<span class="string">&quot;-----Mouse Event End-----\n\n\n&quot;</span>)</span><br><span class="line">    f.close()</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">onKeyboardEvent</span>(<span class="params">event</span>):</span></span><br><span class="line">    <span class="keyword">with</span> <span class="built_in">open</span>(path, <span class="string">&#x27;a+&#x27;</span>) <span class="keyword">as</span> f:</span><br><span class="line">        <span class="comment"># 监听键盘事件</span></span><br><span class="line">        f.write(<span class="string">&quot;-----KeyBoard Event Start-----\n&quot;</span>)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;MessageName:&quot;</span>, event.MessageName)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;WindowName:&quot;</span>, event.WindowName)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;Ascii:&quot;</span>, event.Ascii, <span class="built_in">chr</span>(event.Ascii))</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;Key:&quot;</span>, event.Key)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;ScanCode:&quot;</span>, event.ScanCode)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;Alt&quot;</span>, event.Alt)</span><br><span class="line">        <span class="built_in">print</span> (<span class="string">&quot;---&quot;</span>)</span><br><span class="line">        t=time.localtime()</span><br><span class="line">        t=time.asctime(t)</span><br><span class="line">        result =<span class="string">&quot;Time : &quot;</span> + t + <span class="string">&quot;\n&quot;</span> +<span class="string">&quot;MessageName: &quot;</span>+ <span class="built_in">str</span>(event.MessageName)+<span class="string">&#x27;\n&#x27;</span>+<span class="string">&quot;WindowName: &quot;</span> + <span class="built_in">str</span>(event.WindowName) + <span class="string">&quot; \n&quot;</span> +\</span><br><span class="line">                <span class="string">&quot;Ascii: &quot;</span>+<span class="built_in">str</span>(event.Ascii)+ <span class="string">&#x27; &#x27;</span>+<span class="built_in">chr</span>(event.Ascii)+<span class="string">&#x27;\n&#x27;</span>+<span class="string">&quot;Key: &quot;</span> + <span class="built_in">str</span>( event.Key) + <span class="string">&quot;\n&quot;</span> +<span class="string">&quot;ScanCode: &quot;</span>+<span class="built_in">str</span>(event.ScanCode)+<span class="string">&quot;\n&quot;</span>+\</span><br><span class="line">                <span class="string">&quot;Alt: &quot;</span>+<span class="built_in">str</span>(event.Alt)+<span class="string">&#x27;\n&#x27;</span></span><br><span class="line">        f.write(result)</span><br><span class="line">        f.write(<span class="string">&quot;-----KeyBoard Event End-----\n\n\n&quot;</span>)</span><br><span class="line">        f.close()</span><br><span class="line">        <span class="keyword">if</span> event.Key== <span class="string">&#x27;Q&#x27;</span>:  <span class="comment"># 按下F12后终止adsw</span></span><br><span class="line">            win32api.PostQuitMessage()</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">True</span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">main</span>():</span></span><br><span class="line">    <span class="comment"># 创建一个“钩子”管理对象aaavv  q</span></span><br><span class="line">    hm = pyHook.HookManager()</span><br><span class="line">    <span class="comment"># 监听所有键盘事件</span></span><br><span class="line">    hm.KeyDown = onKeyboardEvent</span><br><span class="line">    <span class="comment"># 设置键盘“钩子”</span></span><br><span class="line">    hm.HookKeyboard()</span><br><span class="line">    <span class="comment"># 监听所有鼠标事件</span></span><br><span class="line">    hm.MouseAll = onMouseEvent</span><br><span class="line">    <span class="comment"># 设置鼠标“钩子”</span></span><br><span class="line">    hm.HookMouse()</span><br><span class="line">    <span class="comment"># 进入循环，如不手动关闭，程序将一直处于监听状态</span></span><br><span class="line">    pythoncom.PumpMessages()</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> __name__ == <span class="string">&quot;__main__&quot;</span>:</span><br><span class="line">    main()</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="https://www.cnblogs.com/lqerio/p/12106771.html">示例出处</a></p>
+<p>pyhook 支持的功能十分有限，不过拿来学习还是非常的便利的。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/reverse/" rel="tag"># reverse</a>
+              <a href="/tags/Hook/" rel="tag"># Hook</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/26/05/2021/CISCN-%E5%9B%BD%E8%B5%9B-wp/" rel="prev" title="CISCN 国赛 wp">
+      <i class="fa fa-chevron-left"></i> CISCN 国赛 wp
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-4"><a class="nav-link" href="#Dll-%E6%B3%A8%E5%85%A5"><span class="nav-number">1.</span> <span class="nav-text">Dll 注入</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%8B%BE%E5%8F%96-Hook-%E4%B9%A6%E6%9C%AC%E5%A4%8D%E7%8E%B0"><span class="nav-number">1.1.</span> <span class="nav-text">消息勾取 Hook (书本复现)</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%88%E6%9E%9C%E5%B1%95%E7%A4%BA"><span class="nav-number">1.2.</span> <span class="nav-text">效果展示</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%B6%88%E6%81%AF%E5%8B%BE%E5%8F%96-Hook-pyhook-%E5%A4%8D%E7%8E%B0"><span class="nav-number">1.3.</span> <span class="nav-text">消息勾取 Hook (pyhook 复现)</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Vior</p>
+  <div class="site-description" itemprop="description">qvq</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">9</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+        <span class="site-state-item-count">1</span>
+        <span class="site-state-item-name">分类</span>
+      </div>
+      <div class="site-state-item site-state-tags">
+        <span class="site-state-item-count">2</span>
+        <span class="site-state-item-name">标签</span>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Vior</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://mist.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Mist</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
