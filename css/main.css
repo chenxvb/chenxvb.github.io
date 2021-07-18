@@ -1168,7 +1168,7 @@ pre .javascript .function {
 }
 .links-of-author a::before,
 .links-of-author span.exturl::before {
-  background: #ccff24;
+  background: #ffa22e;
   border-radius: 50%;
   content: ' ';
   display: inline-block;
@@ -2392,7 +2392,6 @@ body {
 }
 @media (max-width: 767px) {
   body {
-    background-image: url("/assets/mbg.jpg");
     background-size: cover;
   }
 }
